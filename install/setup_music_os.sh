@@ -46,25 +46,32 @@ echo "📦 Using system packages for Raspberry Pi OS..."
 # All required packages are already installed via apt above
 echo "✅ Python packages are already installed via system packages"
 
+# Get current user
+CURRENT_USER=$(whoami)
+CURRENT_HOME="/home/$CURRENT_USER"
+
+echo "👤 Detected user: $CURRENT_USER"
+echo "🏠 User home: $CURRENT_HOME"
+
 # Create necessary directories
 echo "📁 Creating directories..."
-mkdir -p /home/pi/Music
-mkdir -p /home/pi/MusicUI
-mkdir -p /home/pi/MusicUI/assets
+mkdir -p "$CURRENT_HOME/Music"
+mkdir -p "$CURRENT_HOME/MusicUI"
+mkdir -p "$CURRENT_HOME/MusicUI/assets"
 mkdir -p /etc/mpd
 mkdir -p /var/lib/mpd/music
 mkdir -p /var/lib/mpd/playlists
 
 # Set permissions
-chown -R pi:pi /home/pi/Music
-chown -R pi:pi /home/pi/MusicUI
+chown -R "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/Music"
+chown -R "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/MusicUI"
 chown -R mpd:mpd /var/lib/mpd
 
 # Configure MPD
 echo "🎵 Configuring MPD..."
-cat > /etc/mpd.conf << 'EOF'
+cat > /etc/mpd.conf << EOF
 # MPD Configuration for Music OS
-music_directory "/home/pi/Music"
+music_directory "$CURRENT_HOME/Music"
 playlist_directory "/var/lib/mpd/playlists"
 db_file "/var/lib/mpd/mpd.db"
 log_file "/var/log/mpd/mpd.log"
@@ -117,7 +124,7 @@ EOF
 
 # Create systemd service for music player
 echo "🔧 Creating systemd service..."
-cat > /etc/systemd/system/musicplayer.service << 'EOF'
+cat > /etc/systemd/system/musicplayer.service << EOF
 [Unit]
 Description=Music OS Player
 After=network.target mpd.service
@@ -125,12 +132,12 @@ Wants=mpd.service
 
 [Service]
 Type=simple
-User=pi
-Group=pi
-WorkingDirectory=/home/pi/MusicUI
+User=$CURRENT_USER
+Group=$CURRENT_USER
+WorkingDirectory=$CURRENT_HOME/MusicUI
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/pi/.Xauthority
-ExecStart=/usr/bin/python3 /home/pi/MusicUI/music_player.py
+Environment=XAUTHORITY=$CURRENT_HOME/.Xauthority
+ExecStart=/usr/bin/python3 $CURRENT_HOME/MusicUI/music_player.py
 Restart=always
 RestartSec=5
 
@@ -145,36 +152,36 @@ systemctl enable musicplayer.service
 
 # Configure autologin
 echo "🔧 Configuring autologin..."
-if ! grep -q "autologin-user=pi" /etc/systemd/system/getty@tty1.service.d/autologin.conf 2>/dev/null; then
+if ! grep -q "autologin-user=$CURRENT_USER" /etc/systemd/system/getty@tty1.service.d/autologin.conf 2>/dev/null; then
     mkdir -p /etc/systemd/system/getty@tty1.service.d
-    cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf << 'EOF'
+    cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf << EOF
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin pi --noclear %I $TERM
+ExecStart=-/sbin/agetty --autologin $CURRENT_USER --noclear %I $TERM
 EOF
 fi
 
 # Configure auto-start X server
 echo "🔧 Configuring X server autostart..."
-cat > /home/pi/.bash_profile << 'EOF'
-if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
+cat > "$CURRENT_HOME/.bash_profile" << EOF
+if [[ -z \$DISPLAY ]] && [[ \$(tty) = /dev/tty1 ]]; then
     startx
 fi
 EOF
 
 # Configure X server to start music player
-cat > /home/pi/.xinitrc << 'EOF'
+cat > "$CURRENT_HOME/.xinitrc" << EOF
 #!/bin/bash
 # Start music player in fullscreen
-python3 /home/pi/MusicUI/music_player.py
+python3 $CURRENT_HOME/MusicUI/music_player.py
 EOF
 
-chmod +x /home/pi/.xinitrc
-chown pi:pi /home/pi/.bash_profile /home/pi/.xinitrc
+chmod +x "$CURRENT_HOME/.xinitrc"
+chown "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/.bash_profile" "$CURRENT_HOME/.xinitrc"
 
 # Create sample music file for testing
 echo "🎵 Creating sample music file..."
-cat > /home/pi/Music/README.txt << 'EOF'
+cat > "$CURRENT_HOME/Music/README.txt" << EOF
 Music OS - Music Directory
 
 Place your music files (.mp3, .flac, .wav) in this directory.
