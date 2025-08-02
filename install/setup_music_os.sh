@@ -46,16 +46,82 @@ echo "📦 Using system packages for Raspberry Pi OS..."
 # All required packages are already installed via apt above
 echo "✅ Python packages are already installed via system packages"
 
-# Get current user (handle sudo case)
-if [ "$SUDO_USER" ]; then
-    CURRENT_USER="$SUDO_USER"
-else
-    CURRENT_USER=$(whoami)
-fi
-CURRENT_HOME="/home/$CURRENT_USER"
+# User selection function
+select_user() {
+    echo ""
+    echo "🎵 Music OS - User Selection"
+    echo "============================"
+    echo "1. Use current user ($(whoami))"
+    echo "2. Create a new user"
+    echo "3. Use existing user"
+    echo ""
+    read -p "Choose option (1-3): " choice
+    
+    case $choice in
+        1)
+            # Use current user
+            if [ "$SUDO_USER" ]; then
+                CURRENT_USER="$SUDO_USER"
+            else
+                CURRENT_USER=$(whoami)
+            fi
+            echo "✅ Using current user: $CURRENT_USER"
+            ;;
+        2)
+            # Create new user
+            read -p "Enter new username: " new_user
+            if [ -z "$new_user" ]; then
+                echo "❌ Username cannot be empty"
+                exit 1
+            fi
+            
+            # Check if user exists
+            if id "$new_user" &>/dev/null; then
+                echo "❌ User '$new_user' already exists"
+                exit 1
+            fi
+            
+            # Create user
+            echo "🔧 Creating user: $new_user"
+            useradd -m -s /bin/bash "$new_user"
+            usermod -aG audio,plugdev "$new_user"
+            
+            # Set password
+            echo "🔐 Setting password for $new_user"
+            passwd "$new_user"
+            
+            CURRENT_USER="$new_user"
+            echo "✅ Created and using user: $CURRENT_USER"
+            ;;
+        3)
+            # Use existing user
+            read -p "Enter existing username: " existing_user
+            if [ -z "$existing_user" ]; then
+                echo "❌ Username cannot be empty"
+                exit 1
+            fi
+            
+            # Check if user exists
+            if ! id "$existing_user" &>/dev/null; then
+                echo "❌ User '$existing_user' does not exist"
+                exit 1
+            fi
+            
+            CURRENT_USER="$existing_user"
+            echo "✅ Using existing user: $CURRENT_USER"
+            ;;
+        *)
+            echo "❌ Invalid choice"
+            exit 1
+            ;;
+    esac
+    
+    CURRENT_HOME="/home/$CURRENT_USER"
+    echo "🏠 User home: $CURRENT_HOME"
+}
 
-echo "👤 Detected user: $CURRENT_USER"
-echo "🏠 User home: $CURRENT_HOME"
+# Call user selection
+select_user
 
 # Create necessary directories
 echo "📁 Creating directories..."
@@ -208,7 +274,7 @@ EOF
 
 # Set up audio permissions
 echo "🔊 Configuring audio permissions..."
-usermod -a -G audio pi
+usermod -a -G audio "$CURRENT_USER"
 usermod -a -G audio mpd
 
 # Configure ALSA for better audio
@@ -227,7 +293,7 @@ EOF
 echo "✅ Installation complete!"
 echo ""
 echo "🎵 Next steps:"
-echo "1. Copy your music files to /home/pi/Music"
+echo "1. Copy your music files to $CURRENT_HOME/Music"
 echo "2. Reboot the system: sudo reboot"
 echo "3. The music player will start automatically"
 echo ""
