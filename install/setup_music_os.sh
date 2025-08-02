@@ -41,28 +41,10 @@ apt install -y \
 
 # Install Python packages
 echo "🐍 Installing Python packages..."
-# Handle externally managed environment
-if pip3 --version | grep -q "externally-managed"; then
-    echo "📦 Using system packages where available..."
-    # Install system packages first
-    apt install -y \
-        python3-mutagen \
-        python3-pil \
-        python3-pil.imagetk \
-        python3-requests \
-        python3-pygame
-    
-    # Install remaining packages with --break-system-packages (safe for our use case)
-    pip3 install --break-system-packages \
-        eyed3
-else
-    pip3 install \
-        mutagen \
-        eyed3 \
-        pillow \
-        requests \
-        pygame
-fi
+# Handle externally managed environment - always use system packages for Raspberry Pi OS
+echo "📦 Using system packages for Raspberry Pi OS..."
+# All required packages are already installed via apt above
+echo "✅ Python packages are already installed via system packages"
 
 # Create necessary directories
 echo "📁 Creating directories..."
