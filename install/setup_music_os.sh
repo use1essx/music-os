@@ -37,7 +37,13 @@ apt install -y \
     curl \
     alsa-utils \
     pulseaudio \
-    pulseaudio-utils
+    pulseaudio-utils \
+    ffmpeg \
+    vlc \
+    vlc-plugin-base \
+    vlc-plugin-video-output \
+    vlc-plugin-qt \
+    vlc-plugin-skins2
 
 # Install Python packages
 echo "🐍 Installing Python packages..."
@@ -156,6 +162,12 @@ pid_file "/var/run/mpd/mpd.pid"
 state_file "/var/lib/mpd/mpdstate"
 sticker_file "/var/lib/mpd/sticker.sql"
 
+# Supported audio formats (including M4A, AAC, OGG)
+decoder {
+    plugin "ffmpeg"
+    enabled "yes"
+}
+
 # Audio Output Configuration
 audio_output {
     type "alsa"
@@ -261,13 +273,23 @@ echo "🎵 Creating sample music file..."
 cat > "$CURRENT_HOME/Music/README.txt" << EOF
 Music OS - Music Directory
 
-Place your music files (.mp3, .flac, .wav) in this directory.
+Place your music files in this directory.
 The music player will automatically scan and add them to the library.
 
-Supported formats:
+🎵 Supported Audio Formats:
 - MP3 (.mp3)
-- FLAC (.flac) 
-- WAV (.wav)
+- M4A (.m4a) - Apple iTunes format
+- FLAC (.flac) - Lossless audio
+- WAV (.wav) - Uncompressed audio
+- AAC (.aac) - Advanced Audio Codec
+- OGG (.ogg) - Open source format
+- ALAC (.m4a) - Apple Lossless
+
+🎬 Future Video Support (coming soon):
+- MP4 (.mp4)
+- AVI (.avi)
+- MKV (.mkv)
+- MOV (.mov)
 
 The player will automatically detect album art and metadata.
 EOF

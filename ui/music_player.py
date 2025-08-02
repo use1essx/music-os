@@ -27,11 +27,15 @@ try:
     import mutagen
     from mutagen.mp3 import MP3
     from mutagen.id3 import ID3
+    from mutagen.m4a import M4A
+    from mutagen.easyid3 import EasyID3
 except ImportError:
     print("Warning: mutagen not available, metadata features will be limited")
     mutagen = None
     MP3 = None
     ID3 = None
+    M4A = None
+    EasyID3 = None
 
 # Handle pygame import
 try:
@@ -505,6 +509,40 @@ class MusicPlayer:
                 bg='black'
             )
         self.album_label.pack()
+
+    def get_song_info(self, file_path):
+        """Get song information from file (supports MP3, M4A, FLAC, OGG, AAC)"""
+        try:
+            if mutagen:
+                file_ext = file_path.lower()
+                if file_ext.endswith('.mp3'):
+                    audio = MP3(file_path, ID3=ID3)
+                    if audio.tags:
+                        title = audio.tags.get('TIT2', ['Unknown'])[0]
+                        artist = audio.tags.get('TPE1', ['Unknown'])[0]
+                        album = audio.tags.get('TALB', ['Unknown'])[0]
+                        return title, artist, album
+                elif file_ext.endswith('.m4a'):
+                    audio = M4A(file_path)
+                    if audio.tags:
+                        title = audio.tags.get('©nam', ['Unknown'])[0]
+                        artist = audio.tags.get('©ART', ['Unknown'])[0]
+                        album = audio.tags.get('©alb', ['Unknown'])[0]
+                        return title, artist, album
+                elif file_ext.endswith(('.flac', '.ogg', '.aac')):
+                    # Try EasyID3 for other formats
+                    try:
+                        audio = EasyID3(file_path)
+                        title = audio.get('title', ['Unknown'])[0]
+                        artist = audio.get('artist', ['Unknown'])[0]
+                        album = audio.get('album', ['Unknown'])[0]
+                        return title, artist, album
+                    except:
+                        pass
+            return "Unknown", "Unknown", "Unknown"
+        except Exception as e:
+            print(f"Error getting song info: {e}")
+            return "Unknown", "Unknown", "Unknown"
         
     def setup_mpd(self):
         """Initialize MPD connection"""
