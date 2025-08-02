@@ -1,0 +1,18 @@
+[Unit]
+Description=Music OS Player
+After=network.target mpd.service
+Wants=mpd.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/MusicUI
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStart=/usr/bin/python3 /home/pi/MusicUI/music_player.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target 
