@@ -41,12 +41,28 @@ apt install -y \
 
 # Install Python packages
 echo "🐍 Installing Python packages..."
-pip3 install \
-    mutagen \
-    eyed3 \
-    pillow \
-    requests \
-    pygame
+# Handle externally managed environment
+if pip3 --version | grep -q "externally-managed"; then
+    echo "📦 Using system packages where available..."
+    # Install system packages first
+    apt install -y \
+        python3-mutagen \
+        python3-pil \
+        python3-pil.imagetk \
+        python3-requests \
+        python3-pygame
+    
+    # Install remaining packages with --break-system-packages (safe for our use case)
+    pip3 install --break-system-packages \
+        eyed3
+else
+    pip3 install \
+        mutagen \
+        eyed3 \
+        pillow \
+        requests \
+        pygame
+fi
 
 # Create necessary directories
 echo "📁 Creating directories..."

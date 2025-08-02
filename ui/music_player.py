@@ -11,12 +11,34 @@ import threading
 import time
 import os
 import json
-from PIL import Image, ImageTk, ImageDraw
-import mutagen
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3
-import pygame
 import math
+
+# Handle PIL imports
+try:
+    from PIL import Image, ImageTk, ImageDraw
+except ImportError:
+    print("Warning: PIL not available, using fallback image creation")
+    Image = None
+    ImageTk = None
+    ImageDraw = None
+
+# Handle mutagen imports
+try:
+    import mutagen
+    from mutagen.mp3 import MP3
+    from mutagen.id3 import ID3
+except ImportError:
+    print("Warning: mutagen not available, metadata features will be limited")
+    mutagen = None
+    MP3 = None
+    ID3 = None
+
+# Handle pygame import
+try:
+    import pygame
+except ImportError:
+    print("Warning: pygame not available")
+    pygame = None
 
 class MusicPlayer:
     def __init__(self):
@@ -451,23 +473,37 @@ class MusicPlayer:
         
     def create_default_album_art(self):
         """Create a default album art image"""
-        # Create a 300x300 image with a music note
-        img = Image.new('RGB', (300, 300), color='#222222')
-        draw = ImageDraw.Draw(img)
-        
-        # Draw a simple music note
-        draw.ellipse([120, 100, 180, 160], fill='white')
-        draw.rectangle([170, 80, 190, 200], fill='white')
-        draw.ellipse([170, 60, 210, 100], fill='white')
-        
-        self.album_photo = ImageTk.PhotoImage(img)
+        if Image is not None:
+            # Create a 300x300 image with a music note
+            img = Image.new('RGB', (300, 300), color='#222222')
+            draw = ImageDraw.Draw(img)
+            
+            # Draw a simple music note
+            draw.ellipse([120, 100, 180, 160], fill='white')
+            draw.rectangle([170, 80, 190, 200], fill='white')
+            draw.ellipse([170, 60, 210, 100], fill='white')
+            
+            self.album_photo = ImageTk.PhotoImage(img)
+        else:
+            # Fallback: create a simple text-based album art
+            self.album_photo = None
         
         # Create label for album art
-        self.album_label = tk.Label(
-            self.album_frame,
-            image=self.album_photo,
-            bg='black'
-        )
+        if self.album_photo:
+            self.album_label = tk.Label(
+                self.album_frame,
+                image=self.album_photo,
+                bg='black'
+            )
+        else:
+            # Fallback text label
+            self.album_label = tk.Label(
+                self.album_frame,
+                text="🎵",
+                font=('Arial', 48),
+                fg='white',
+                bg='black'
+            )
         self.album_label.pack()
         
     def setup_mpd(self):
