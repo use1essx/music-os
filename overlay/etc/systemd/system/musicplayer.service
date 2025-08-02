@@ -1,0 +1,18 @@
+[Unit]
+Description=Custom Music OS Player
+After=network.target mpd.service
+Wants=mpd.service
+
+[Service]
+Type=simple
+User=useless
+Group=useless
+WorkingDirectory=/home/useless/MusicUI
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/useless/.Xauthority
+ExecStart=/usr/bin/python3 /home/useless/MusicUI/music_app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target 

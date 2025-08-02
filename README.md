@@ -1,58 +1,112 @@
-# Music OS - Raspberry Pi Music Player
+# 🎵 Custom Music OS
 
-A custom music-focused operating system for Raspberry Pi 4+ with iPod-inspired design.
+A **fully custom, standalone Music Operating System** built with Buildroot for **multiple platforms** including Raspberry Pi, x86 PCs, and other ARM devices.
 
-## 🎵 Features
+## 🎯 Vision
 
-- **Local Music Playback**: Supports MP3, FLAC, WAV files from `/home/pi/Music`
-- **Modern UI**: Full-screen music interface with wheel-style controls
-- **Auto-boot**: Boots directly into music player without desktop
-- **Multiple Audio Outputs**: 3.5mm jack, HDMI audio, USB DAC support
-- **Touch/Keyboard Control**: Intuitive controls for both input methods
+This is a **dedicated music appliance** — not a Linux desktop. It boots directly into a fullscreen music player UI with no desktop environment, designed for simplicity, beauty, and performance.
 
-## 🖥️ System Requirements
+## 🚀 Features
 
-- Raspberry Pi 4 (or higher) with 2GB+ RAM
-- MicroSD card (16GB+ recommended)
-- HDMI display or touchscreen
-- Speakers/headphones via 3.5mm jack or HDMI
+- **Direct boot to music UI** (no desktop, no login)
+- **Local music playback** (MP3, FLAC, WAV, M4A, AAC, OGG)
+- **YouTube streaming & download** via yt-dlp + mpv
+- **Spotify Connect** support (optional)
+- **Wi-Fi auto-connect** with SSH access
+- **Touchscreen & keyboard** input support
+- **Fast boot** (< 10s) and **low latency** (< 50ms)
+
+## 🖥️ Supported Platforms
+
+### **Primary Targets**
+- **Raspberry Pi 4/5** - ARM64, optimized for Pi hardware
+- **x86 PCs** - Intel/AMD, for development and testing
+- **Generic ARM64** - Other ARM boards (Rock64, NanoPi, etc.)
+
+### **Secondary Targets**
+- **Raspberry Pi 3** - ARM32, older Pi models
+- **ARM32 devices** - Various single-board computers
+- **Virtual machines** - For testing and development
 
 ## 📁 Project Structure
 
 ```
-musiceOS/
-├── install/              # Installation scripts
-├── config/              # Configuration files
-├── ui/                  # Python GUI application
-├── scripts/             # System scripts
-└── docs/               # Documentation
+custom-music-os/
+├── buildroot/           # Buildroot configuration
+├── overlay/             # Custom filesystem overlay
+├── configs/             # Build configurations
+├── scripts/             # Build and test scripts
+├── docs/               # Documentation
+└── README.md           # This file
 ```
 
-## 🚀 Quick Start
+## 🛠️ Build Requirements
 
-1. Flash Raspberry Pi OS Lite (64-bit) to your SD card
-2. Boot the Pi and run the installation script
-3. Copy your music files to `/home/pi/Music`
-4. Reboot to start the music player
+- **Linux environment** (Ubuntu 20.04+ recommended)
+- **Buildroot** (latest stable)
+- **QEMU** for testing ARM builds on x86
+- **VMware** for x86 testing (recommended)
+- **SD card** for embedded device testing
 
-## 🔧 Installation
+## 📋 Quick Start
 
-Run the installation script:
+### For VMware Testing (Recommended)
 ```bash
-sudo ./install/setup_music_os.sh
+# Setup and build for VMware
+./scripts/setup_buildroot.sh
+./scripts/test_vmware.sh
+
+# Open the generated .vmx file in VMware
 ```
 
-## 🎛️ Controls
+### For Other Platforms
+1. **Choose your target platform**
+2. **Clone and setup Buildroot**
+3. **Configure for your hardware**
+4. **Build the OS image**
+5. **Flash to storage device**
+6. **Boot and enjoy!**
 
-- **Play/Pause**: Space bar or center button
-- **Next Track**: Right arrow or next button
-- **Previous Track**: Left arrow or previous button
-- **Volume Up/Down**: Up/Down arrows or volume buttons
-- **Exit**: Ctrl+C (for development)
+*See `docs/VMWARE_TESTING.md` for detailed VMware instructions*
 
-## 📱 Future Features
+## 🎨 UI Design
 
-- Bluetooth audio support
-- WiFi connectivity management
-- Online streaming plugins (Spotify, YouTube Music)
-- Physical clickwheel integration via GPIO 
+```
++------------------------------------------------------+
+| 🎵 Now Playing: [Song Title - Artist]               |
+|                                                      |
+|                    [Album Art]                       |
+|                                                      |
+|  ⏮️  ⏯️  ⏭️                          🔈 █████──       |
++------------------------------------------------------+
+| [ Local Music ] [ YouTube ] [ Spotify ] [ Settings ] |
++------------------------------------------------------+
+```
+
+## 🎯 Performance Targets
+
+| Goal              | Target                        |
+|-------------------|-------------------------------|
+| Boot Time         | < 10s                         |
+| RAM Usage         | < 256MB                       |
+| Image Size        | < 2GB                         |
+| Audio Latency     | < 50ms                        |
+| GUI Performance   | Smooth & responsive           |
+
+## 🔧 Technical Stack
+
+- **OS**: Custom Linux built with Buildroot
+- **Audio**: MPD + ALSA (no PulseAudio)
+- **GUI**: Python + Tkinter/PyQt5
+- **Network**: wpa_supplicant + dropbear SSH
+- **Video**: mpv + yt-dlp for YouTube
+
+## 📝 License
+
+MIT License - see LICENSE file for details.
+
+---
+
+**Status**: 🚧 In Development
+
+*This project is actively being developed. The goal is to create a professional-grade embedded music appliance that feels like a dedicated music device rather than a computer running music software.* 
