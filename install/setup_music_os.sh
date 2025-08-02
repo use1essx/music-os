@@ -294,10 +294,72 @@ The music player will automatically scan and add them to the library.
 The player will automatically detect album art and metadata.
 EOF
 
+# Copy UI files to MusicUI directory
+echo "🎨 Setting up Music UI..."
+if [ -d "ui" ]; then
+    cp -r ui/* "$CURRENT_HOME/MusicUI/"
+    chmod +x "$CURRENT_HOME/MusicUI/music_player.py"
+    chown -R "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/MusicUI"
+    echo "✅ Music UI files copied"
+else
+    echo "⚠️  Warning: UI directory not found, creating basic player"
+    # Create basic music player if UI files not available
+    cat > "$CURRENT_HOME/MusicUI/music_player.py" << 'EOF'
+#!/usr/bin/env python3
+import tkinter as tk
+import subprocess
+import threading
+import time
+
+class MusicPlayer:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Music OS")
+        self.root.configure(bg='black')
+        self.root.attributes('-fullscreen', True)
+        
+        # Simple UI
+        label = tk.Label(self.root, text="Music OS\nPress Space to Play/Pause", 
+                        font=('Arial', 24), fg='white', bg='black')
+        label.pack(expand=True)
+        
+        self.root.bind('<space>', lambda e: self.toggle_play())
+        self.root.bind('<Escape>', lambda e: self.root.quit())
+        
+    def toggle_play(self):
+        subprocess.run(['mpc', 'toggle'])
+        
+    def run(self):
+        self.root.mainloop()
+
+if __name__ == "__main__":
+    player = MusicPlayer()
+    player.run()
+EOF
+    chmod +x "$CURRENT_HOME/MusicUI/music_player.py"
+    chown "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/MusicUI/music_player.py"
+    echo "✅ Basic music player created"
+fi
+
 # Set up audio permissions
 echo "🔊 Configuring audio permissions..."
 usermod -a -G audio "$CURRENT_USER"
 usermod -a -G audio mpd
+
+# Fix home directory permissions for MPD access
+echo "🔧 Fixing directory permissions..."
+chmod 755 "$CURRENT_HOME"
+chmod 755 "$CURRENT_HOME/Music"
+chown -R mpd:audio "$CURRENT_HOME/Music"
+chmod -R 755 "$CURRENT_HOME/Music"
+
+# Test MPD access
+echo "🧪 Testing MPD access..."
+if sudo -u mpd test -d "$CURRENT_HOME/Music"; then
+    echo "✅ MPD can access music directory"
+else
+    echo "⚠️  Warning: MPD access test failed"
+fi
 
 # Configure ALSA for better audio
 cat > /etc/asound.conf << 'EOF'
@@ -312,6 +374,32 @@ ctl.!default {
 }
 EOF
 
+# Final test and verification
+echo "🧪 Running final tests..."
+echo ""
+
+# Test MPD service
+if systemctl is-active --quiet mpd; then
+    echo "✅ MPD service is running"
+else
+    echo "❌ MPD service is not running"
+fi
+
+# Test music player file
+if [ -f "$CURRENT_HOME/MusicUI/music_player.py" ]; then
+    echo "✅ Music player file exists"
+else
+    echo "❌ Music player file missing"
+fi
+
+# Test music directory permissions
+if sudo -u mpd test -d "$CURRENT_HOME/Music"; then
+    echo "✅ MPD can access music directory"
+else
+    echo "❌ MPD cannot access music directory"
+fi
+
+echo ""
 echo "✅ Installation complete!"
 echo ""
 echo "🎵 Next steps:"
@@ -323,4 +411,9 @@ echo "📱 Controls:"
 echo "- Space: Play/Pause"
 echo "- Left/Right arrows: Previous/Next track"
 echo "- Up/Down arrows: Volume control"
-echo "- Ctrl+C: Exit (for development)" 
+echo "- Ctrl+C: Exit (for development)"
+echo ""
+echo "🔧 Manual test commands:"
+echo "- Test MPD: mpc status"
+echo "- Test player: python3 $CURRENT_HOME/MusicUI/music_player.py"
+echo "- Update database: mpc update" 
