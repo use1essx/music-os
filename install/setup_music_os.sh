@@ -46,8 +46,12 @@ echo "📦 Using system packages for Raspberry Pi OS..."
 # All required packages are already installed via apt above
 echo "✅ Python packages are already installed via system packages"
 
-# Get current user
-CURRENT_USER=$(whoami)
+# Get current user (handle sudo case)
+if [ "$SUDO_USER" ]; then
+    CURRENT_USER="$SUDO_USER"
+else
+    CURRENT_USER=$(whoami)
+fi
 CURRENT_HOME="/home/$CURRENT_USER"
 
 echo "👤 Detected user: $CURRENT_USER"
@@ -65,7 +69,14 @@ mkdir -p /var/lib/mpd/playlists
 # Set permissions
 chown -R "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/Music"
 chown -R "$CURRENT_USER:$CURRENT_USER" "$CURRENT_HOME/MusicUI"
-chown -R mpd:mpd /var/lib/mpd
+
+# Set mpd permissions (check if mpd group exists)
+if getent group mpd > /dev/null 2>&1; then
+    chown -R mpd:mpd /var/lib/mpd
+else
+    echo "⚠️  Warning: mpd group not found, using audio group"
+    chown -R mpd:audio /var/lib/mpd
+fi
 
 # Configure MPD
 echo "🎵 Configuring MPD..."
