@@ -1,112 +1,100 @@
-# 🎵 Custom Music OS
+# 🎵 Music OS
 
-A **fully custom, standalone Music Operating System** built with Buildroot for **multiple platforms** including Raspberry Pi, x86 PCs, and other ARM devices.
+A **dedicated music operating system** that boots directly into a fullscreen music player UI.
 
-## 🎯 Vision
+## ✨ Features
 
-This is a **dedicated music appliance** — not a Linux desktop. It boots directly into a fullscreen music player UI with no desktop environment, designed for simplicity, beauty, and performance.
+- **🚀 Fast boot** (< 10 seconds)
+- **🎵 Local music playback** (MP3, FLAC, WAV, M4A, AAC, OGG)
+- **📺 YouTube streaming & download** via yt-dlp + mpv
+- **🎧 Spotify Connect** support
+- **📶 Wi-Fi auto-connect** with SSH access
+- **👆 Touchscreen & keyboard** input support
+- **💾 Low memory usage** (< 512MB RAM)
+- **🎧 Low latency audio** (< 50ms)
 
-## 🚀 Features
+## 🚀 Getting Started
 
-- **Direct boot to music UI** (no desktop, no login)
-- **Local music playback** (MP3, FLAC, WAV, M4A, AAC, OGG)
-- **YouTube streaming & download** via yt-dlp + mpv
-- **Spotify Connect** support (optional)
-- **Wi-Fi auto-connect** with SSH access
-- **Touchscreen & keyboard** input support
-- **Fast boot** (< 10s) and **low latency** (< 50ms)
+This project provides two paths: a modern Arch Linux-based system (recommended) and a legacy Buildroot system.
 
-## 🖥️ Supported Platforms
+### 1. Arch Linux (Recommended)
 
-### **Primary Targets**
-- **Raspberry Pi 4/5** - ARM64, optimized for Pi hardware
-- **x86 PCs** - Intel/AMD, for development and testing
-- **Generic ARM64** - Other ARM boards (Rock64, NanoPi, etc.)
+For the best experience, use the Arch Linux setup scripts.
 
-### **Secondary Targets**
-- **Raspberry Pi 3** - ARM32, older Pi models
-- **ARM32 devices** - Various single-board computers
-- **Virtual machines** - For testing and development
+```bash
+# Run the quick start script to begin
+./scripts/arch/quick_start.sh
+```
+
+### 2. Buildroot (Legacy)
+
+For advanced users who need a minimal, embedded system.
+
+```bash
+# Run the setup script for Buildroot
+./scripts/buildroot/setup.sh
+```
+
+## ⚙️ Configuration
+
+### Wi-Fi
+
+To connect to a wireless network, edit the `wpa_supplicant.conf` file:
+
+1.  Open `config/arch/wpa_supplicant.conf`.
+2.  Replace `YourSSID` and `YourPassword` with your network's credentials.
+
+This file will be copied to the target system to enable auto-connecting to your Wi-Fi network on boot.
+
+## 🐍 The Music Player Application
+
+The user interface is a Python application located at `apps/music_player/music_app.py`.
+
+- **Framework**: Tkinter
+- **Function**: Provides the fullscreen graphical interface for the OS.
+
+To modify the UI, you can edit this file directly.
+
+## 🚀 Automatic Startup
+
+The music player is launched automatically on boot by a systemd service.
+
+- **Launcher Script**: `scripts/arch/music_launcher.sh`
+  - This script sets up the environment and starts the Python application.
+- **Service File**: `config/systemd/music-player.service`
+  - This file tells the systemd init system to run the launcher script after the graphical environment has loaded.
 
 ## 📁 Project Structure
 
 ```
-custom-music-os/
-├── buildroot/           # Buildroot configuration
-├── overlay/             # Custom filesystem overlay
-├── configs/             # Build configurations
-├── scripts/             # Build and test scripts
-├── docs/               # Documentation
-└── README.md           # This file
+musiceOS/
+├── README.md                    # This file
+├── apps/
+│   └── music_player/
+│       └── music_app.py         # The main Python GUI application
+├── config/
+│   ├── arch/
+│   │   ├── mpd.conf
+│   │   ├── music_os.conf
+│   │   └── wpa_supplicant.conf  # Wi-Fi configuration template
+│   └── systemd/
+│       └── music-player.service # Systemd service for autostart
+├── docs/                        # Detailed documentation
+├── legacy/                      # Legacy Buildroot files
+└── scripts/
+    ├── arch/
+    │   ├── music_launcher.sh    # Script to start the GUI
+    │   └── setup.sh             # Main setup script
+    └── buildroot/
 ```
 
-## 🛠️ Build Requirements
+## 📚 Detailed Documentation
 
-- **Linux environment** (Ubuntu 20.04+ recommended)
-- **Buildroot** (latest stable)
-- **QEMU** for testing ARM builds on x86
-- **VMware** for x86 testing (recommended)
-- **SD card** for embedded device testing
+For more in-depth information, please refer to the documents in the `docs/` directory.
 
-## 📋 Quick Start
-
-### For VMware Testing (Recommended)
-```bash
-# Setup and build for VMware
-./scripts/setup_buildroot.sh
-./scripts/test_vmware.sh
-
-# Open the generated .vmx file in VMware
-```
-
-### For Other Platforms
-1. **Choose your target platform**
-2. **Clone and setup Buildroot**
-3. **Configure for your hardware**
-4. **Build the OS image**
-5. **Flash to storage device**
-6. **Boot and enjoy!**
-
-*See `docs/VMWARE_TESTING.md` for detailed VMware instructions*
-
-## 🎨 UI Design
-
-```
-+------------------------------------------------------+
-| 🎵 Now Playing: [Song Title - Artist]               |
-|                                                      |
-|                    [Album Art]                       |
-|                                                      |
-|  ⏮️  ⏯️  ⏭️                          🔈 █████──       |
-+------------------------------------------------------+
-| [ Local Music ] [ YouTube ] [ Spotify ] [ Settings ] |
-+------------------------------------------------------+
-```
-
-## 🎯 Performance Targets
-
-| Goal              | Target                        |
-|-------------------|-------------------------------|
-| Boot Time         | < 10s                         |
-| RAM Usage         | < 256MB                       |
-| Image Size        | < 2GB                         |
-| Audio Latency     | < 50ms                        |
-| GUI Performance   | Smooth & responsive           |
-
-## 🔧 Technical Stack
-
-- **OS**: Custom Linux built with Buildroot
-- **Audio**: MPD + ALSA (no PulseAudio)
-- **GUI**: Python + Tkinter/PyQt5
-- **Network**: wpa_supplicant + dropbear SSH
-- **Video**: mpv + yt-dlp for YouTube
-
-## 📝 License
-
-MIT License - see LICENSE file for details.
+- **[docs/QUICK_START.md](docs/QUICK_START.md)** - Quick start guide
+- **[docs/ARCH_SETUP.md](docs/ARCH_SETUP.md)** - Detailed Arch Linux setup
 
 ---
 
-**Status**: 🚧 In Development
-
-*This project is actively being developed. The goal is to create a professional-grade embedded music appliance that feels like a dedicated music device rather than a computer running music software.* 
+**Status**: 🚀 In Development

@@ -1,0 +1,14 @@
+[Unit]
+Description=Music Player Application
+After=graphical.target
+
+[Service]
+User=useless
+Group=useless
+Type=simple
+ExecStart=/home/useless/scripts/arch/music_launcher.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target
